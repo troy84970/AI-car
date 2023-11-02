@@ -1,5 +1,5 @@
+using System;
 using UnityEngine;
-
 public class Car : MonoBehaviour
 {
     //unity前方0度與pdf中的說明有異，需將輸出or期望輸出扣除90度才是Unity角度
@@ -10,8 +10,13 @@ public class Car : MonoBehaviour
     bool isGoal = false;
     public LayerMask wallLayer;
     public int rayIndex = 0;
+    private float steeringWheelDegree = 0;
+    private double deltax;
+    private double deltaz;//2d中的y
+    private Transform carTransform;
     void Awake()
     {
+        carTransform = transform;
         lineRenderer = gameObject.AddComponent<LineRenderer>();
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.blue;
@@ -19,6 +24,8 @@ public class Car : MonoBehaviour
         lineRenderer.startWidth = 0.08f;
         lineRenderer.endWidth = 0.08f;
         lineRenderer.positionCount = 6;
+        deltax = 0;
+        deltaz = 0;
         Reset();
     }
     // Start is called before the first frame update
@@ -34,11 +41,18 @@ public class Car : MonoBehaviour
         CastRay(0);
         CastRay(-45);
         if (isCollideWall) Reset();
+        Move();
     }
     void Move()
     {
-        float degree = transform.rotation.eulerAngles.y;
-        degree = degree + 45f;
+        //cos(pi/2)有精確度問題
+        float ydegree = 90 + carTransform.eulerAngles.y;//水平夾角
+        deltax = (Math.Cos(ydegree * Math.PI / 180 + steeringWheelDegree * Math.PI / 180) + Math.Sin(steeringWheelDegree * Math.PI / 180) * Math.Sin(ydegree * Math.PI / 180)) * Time.deltaTime;
+        deltaz = (Math.Sin(ydegree * Math.PI / 180 + steeringWheelDegree * Math.PI / 180) - Math.Sin(steeringWheelDegree * Math.PI / 180) * Math.Cos(ydegree * Math.PI / 180)) * Time.deltaTime;
+        float deltaydegree = (float)(Math.Asin(2 * Math.Sin(steeringWheelDegree * Math.PI / 180) / 6) * Time.deltaTime);
+        //move
+        carTransform.Translate((float)deltax, 0, (float)deltaz);
+        carTransform.Rotate(0, deltaydegree, 0);
     }
     void Reset()
     {
