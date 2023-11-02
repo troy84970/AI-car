@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 public class Car : MonoBehaviour
@@ -16,10 +17,13 @@ public class Car : MonoBehaviour
     private double deltaz;//2d中的y
     private Transform carTransform;
     public Text dL, dM, dR;
+    public PointsDrawer pointsDrawer;
     void Awake()
     {
+
         carTransform = transform;
         lineRenderer = gameObject.AddComponent<LineRenderer>();
+
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.blue;
         lineRenderer.endColor = Color.blue;
@@ -30,12 +34,6 @@ public class Car : MonoBehaviour
         deltaz = 0;
         Reset();
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -55,13 +53,17 @@ public class Car : MonoBehaviour
         //move
         carTransform.Translate((float)deltax, 0, (float)deltaz);
         carTransform.Rotate(0, deltaydegree, 0);
+        pointsDrawer.AddPoint(new Vector3(carTransform.position.x, 0.1f, carTransform.position.z));
     }
+
+
     void Reset()
     {
         isGoal = false;
         isCollideWall = false;
         transform.position = resetPosition;
         transform.rotation = resetDegree;
+        pointsDrawer.ClearWayPoint();
     }
     private void OnTriggerEnter(Collider other)
     {
