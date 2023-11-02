@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 public class Car : MonoBehaviour
 {
     //unity前方0度與pdf中的說明有異，需將輸出or期望輸出扣除90度才是Unity角度
@@ -14,6 +15,7 @@ public class Car : MonoBehaviour
     private double deltax;
     private double deltaz;//2d中的y
     private Transform carTransform;
+    public Text dL, dM, dR;
     void Awake()
     {
         carTransform = transform;
@@ -37,9 +39,9 @@ public class Car : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        CastRay(+45);
-        CastRay(0);
-        CastRay(-45);
+        UpdateDistanceText(Vector3.Distance(CastRay(-45), carTransform.position),
+                           Vector3.Distance(CastRay(0), carTransform.position),
+                           Vector3.Distance(CastRay(45), carTransform.position));
         if (isCollideWall) Reset();
         Move();
     }
@@ -80,5 +82,11 @@ public class Car : MonoBehaviour
             rayIndex %= 6;
         }
         return hit.point;
+    }
+    void UpdateDistanceText(float l, float m, float r)
+    {
+        dL.text = "左側距離:" + l;
+        dM.text = "中間距離:" + m;
+        dR.text = "右側距離:" + r;
     }
 }
