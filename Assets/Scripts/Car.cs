@@ -12,7 +12,7 @@ public class Car : MonoBehaviour
     bool isGoal = false;
     public LayerMask wallLayer;
     public int rayIndex = 0;
-    private float steeringWheelDegree = 0;
+    private float steeringWheelDegree = 0;//RBFN output
     private double deltax;
     private double deltaz;//2d中的y
     private Transform carTransform;
