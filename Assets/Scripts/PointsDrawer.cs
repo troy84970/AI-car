@@ -12,6 +12,7 @@ public class PointsDrawer : MonoBehaviour
         wayPoints = new List<Vector3>();
         wayPointRenderer = gameObject.AddComponent<LineRenderer>();
         wayPointRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        wayPointRenderer.loop = false;
     }
     void Update()
     {
@@ -28,8 +29,9 @@ public class PointsDrawer : MonoBehaviour
     }
     void DrawPoints()
     {
+        wayPointRenderer.loop = false;
         wayPointRenderer.positionCount = wayPoints.Count;
-        for (int i = 0; i < wayPointRenderer.positionCount; i++)
+        for (int i = 1; i < wayPointRenderer.positionCount; i++)
         {
             wayPointRenderer.SetPosition(i, wayPoints[i]);
         }

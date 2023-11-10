@@ -45,7 +45,7 @@ public class WallBuilder : MonoBehaviour
             wallSegment = Instantiate(wallPrefab, midPoint, Quaternion.Euler(0, 90, 0));
         else
             wallSegment = Instantiate(wallPrefab, midPoint, Quaternion.Euler(0, 0, 0));
-        wallSegment.transform.localScale = new Vector3(distance / 2, 1, 1);//prefab的x大小是兩單位
+        wallSegment.transform.localScale = new Vector3(distance / 2 * 1.005f, 1, 1);//prefab的x大小是兩單位
         wallSegment.transform.parent = transform;
     }
     void CreateGoalLine(Vector3 topLeft, Vector3 bottomRight)
@@ -54,7 +54,7 @@ public class WallBuilder : MonoBehaviour
         float distance = Vector3.Distance(midPoint, bottomRight) * 2;
         GameObject goal;
         goal = Instantiate(goalPrefab, midPoint, Quaternion.Euler(0, 0, 0));
-        goal.transform.localScale = new Vector3(distance, 2, 0.05f);
+        goal.transform.localScale = new Vector3(distance, 2, 0.02f);
         goal.transform.parent = transform;
     }
 }

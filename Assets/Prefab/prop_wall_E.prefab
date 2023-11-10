@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1167223205510610556}
   - component: {fileID: -4664854691386587711}
   - component: {fileID: -7398991873075039329}
+  - component: {fileID: 1102750232692862394}
   m_Layer: 6
   m_Name: prop_wall_E
   m_TagString: Wall
@@ -29,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 806763504586645417}
   m_LocalRotation: {x: -3.621977e-15, y: 1, z: -0.000000021855694, w: -0.00000016292068}
   m_LocalPosition: {x: -0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 0.12}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -110,7 +111,21 @@ BoxCollider:
   m_GameObject: {fileID: 806763504586645417}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 2, y: 1.2000002, z: 0.20000052}
   m_Center: {x: -0.000000059604645, y: 0.6000001, z: -0.000000063329935}
+--- !u!64 &1102750232692862394
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806763504586645417}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 3628464141889871140, guid: 8c56f4626c3e2794eb8894ad6f137c79, type: 3}

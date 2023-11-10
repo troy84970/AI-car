@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using MathNet.Numerics.LinearAlgebra;
 public class Car : MonoBehaviour
 {
     //unity前方0度與pdf中的說明有異，需將輸出or期望輸出扣除90度才是Unity角度
@@ -12,18 +13,22 @@ public class Car : MonoBehaviour
     bool isGoal = false;
     public LayerMask wallLayer;
     public int rayIndex = 0;
-    private float steeringWheelDegree = 0;//RBFN output
+    public float steeringWheelDegree = 0;
     private double deltax;
     private double deltaz;//2d中的y
+    public float speed = 1;
     private Transform carTransform;
     public Text dL, dM, dR;
     public PointsDrawer pointsDrawer;
+    private MLP mlp;
+    private RBFN rBFN;
+    //private RBFN rBFN;
+    private float frontD, leftD, rightD;
     void Awake()
     {
 
         carTransform = transform;
         lineRenderer = gameObject.AddComponent<LineRenderer>();
-
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.blue;
         lineRenderer.endColor = Color.blue;
@@ -33,26 +38,40 @@ public class Car : MonoBehaviour
         deltax = 0;
         deltaz = 0;
         Reset();
+        mlp = new MLP();
+        //rBFN = new RBFN(20);
+        //rBFN.Train();
     }
     // Update is called once per frame
     void Update()
     {
-        UpdateDistanceText(Vector3.Distance(CastRay(-45), carTransform.position),
-                           Vector3.Distance(CastRay(0), carTransform.position),
-                           Vector3.Distance(CastRay(45), carTransform.position));
+        frontD = Vector3.Distance(CastRay(0), carTransform.position);
+        rightD = Vector3.Distance(CastRay(45), carTransform.position);
+        leftD = Vector3.Distance(CastRay(-45), carTransform.position);
+        UpdateDistanceText(leftD, frontD, rightD);
         if (isCollideWall) Reset();
+        UpdateSteeringWheelDegree();
         Move();
+    }
+    void UpdateSteeringWheelDegree()
+    {
+        Vector<double> v = Vector<double>.Build.Dense(3);
+        v[2] = leftD;
+        v[0] = frontD;
+        v[1] = rightD;
+        steeringWheelDegree = (float)mlp.Predict(v);
+        //steeringWheelDegree = (float)rBFN.Predict(v);
     }
     void Move()
     {
         //cos(pi/2)有精確度問題
-        float ydegree = 90 + carTransform.eulerAngles.y;//水平夾角
-        deltax = (Math.Cos(ydegree * Math.PI / 180 + steeringWheelDegree * Math.PI / 180) + Math.Sin(steeringWheelDegree * Math.PI / 180) * Math.Sin(ydegree * Math.PI / 180)) * Time.deltaTime;
-        deltaz = (Math.Sin(ydegree * Math.PI / 180 + steeringWheelDegree * Math.PI / 180) - Math.Sin(steeringWheelDegree * Math.PI / 180) * Math.Cos(ydegree * Math.PI / 180)) * Time.deltaTime;
-        float deltaydegree = (float)(Math.Asin(2 * Math.Sin(steeringWheelDegree * Math.PI / 180) / 6) * Time.deltaTime);
+        float ydegree = 90 - carTransform.eulerAngles.y;//水平夾角
+        deltax = (Math.Cos(ydegree * Math.PI / 180 + steeringWheelDegree * Math.PI / 180) + Math.Sin(steeringWheelDegree * Math.PI / 180) * Math.Sin(ydegree * Math.PI / 180)) * Time.deltaTime * speed;
+        deltaz = (Math.Sin(ydegree * Math.PI / 180 + steeringWheelDegree * Math.PI / 180) - Math.Sin(steeringWheelDegree * Math.PI / 180) * Math.Cos(ydegree * Math.PI / 180)) * Time.deltaTime * speed;
+        float deltaydegree = (float)Math.Asin(2 * Math.Sin(steeringWheelDegree * Math.PI / 180) / 6);
         //move
         carTransform.Translate((float)deltax, 0, (float)deltaz);
-        carTransform.Rotate(0, deltaydegree, 0);
+        carTransform.Rotate(0, -deltaydegree, 0, Space.Self);
         pointsDrawer.AddPoint(new Vector3(carTransform.position.x, 0.1f, carTransform.position.z));
     }
 
