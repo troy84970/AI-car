@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using MathNet.Numerics.LinearAlgebra;
 using System;
+using Accord.Math;
+using System.Linq;
 
 public class MLP
 {
@@ -22,8 +24,13 @@ public class MLP
     double outPutBias;
     double learningRate = 0.4;
     double tmax = 0, tmin = 1000, dmax = 40, dmin = -40;
+    List<double> tmaxs;
+    List<double> tmins;
+
     public MLP()
     {
+        tmaxs = new List<double>();
+        tmins = new List<double>();
         UnityEngine.Random.InitState(30);
         //initialize
         biases = new List<Matrix<double>>();
@@ -111,15 +118,15 @@ public class MLP
         r = (dmax - dmin) * r + dmin;
         return r;
     }
-    private double NormalizeData(double d)
+    private double NormalizeData(double d, int i)
     {
-        return (d - tmin) / (tmax - tmin);
+        return (d - tmins[i]) / (tmaxs[i] - tmins[i]);
     }
     private Vector<double> NormalizeData(Vector<double> v)
     {
         Vector<double> v2 = v.Clone();
         for (int i = 0; i < v.Count; i++)
-            v2[i] = NormalizeData(v2[i]);
+            v2[i] = NormalizeData(v2[i], i);
         return v2;
     }
     private double NormalizeY(double val)
@@ -142,8 +149,37 @@ public class MLP
             if (tmp[0] < tmin) tmin = tmp[0];
             if (tmp[1] < tmin) tmin = tmp[1];
             if (tmp[2] < tmin) tmin = tmp[2];
-            ds.Add(double.Parse(data[3]));
             inputs.Add(Vector<double>.Build.DenseOfArray(tmp));
+            ds.Add(double.Parse(data[3]));
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            var dimensionValues = inputs.Select(v => v[i]);
+            double max = dimensionValues.Max();
+            double min = dimensionValues.Min();
+            tmaxs.Add(max);
+            tmins.Add(min);
+        }
+
+    }
+    private void GetData5d()
+    {
+        inputs = new List<Vector<double>>();
+        ds = new List<double>();
+        textAsset = Resources.Load("train4dAll") as TextAsset;
+        string[] trainingDatas = textAsset.text.Split("\n");
+        for (int i = 0; i < trainingDatas.Length - 2; i++)
+        {
+            string[] data = trainingDatas[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var tmp = new[] { double.Parse(data[0]), double.Parse(data[1]), double.Parse(data[2]), double.Parse(data[3]), double.Parse(data[4]) };
+            if (tmp[0] > tmax) tmax = tmp[0];
+            if (tmp[1] > tmax) tmax = tmp[1];
+            if (tmp[2] > tmax) tmax = tmp[2];
+            if (tmp[0] < tmin) tmin = tmp[0];
+            if (tmp[1] < tmin) tmin = tmp[1];
+            if (tmp[2] < tmin) tmin = tmp[2];
+            inputs.Add(Vector<double>.Build.DenseOfArray(tmp));
+            ds.Add(double.Parse(data[4]));
         }
     }
     private void BackPropogation(double y, double d)
