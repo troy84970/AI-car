@@ -143,12 +143,6 @@ public class MLP
         {
             string[] data = trainingDatas[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var tmp = new[] { double.Parse(data[0]), double.Parse(data[1]), double.Parse(data[2]) };
-            if (tmp[0] > tmax) tmax = tmp[0];
-            if (tmp[1] > tmax) tmax = tmp[1];
-            if (tmp[2] > tmax) tmax = tmp[2];
-            if (tmp[0] < tmin) tmin = tmp[0];
-            if (tmp[1] < tmin) tmin = tmp[1];
-            if (tmp[2] < tmin) tmin = tmp[2];
             inputs.Add(Vector<double>.Build.DenseOfArray(tmp));
             ds.Add(double.Parse(data[3]));
         }
@@ -166,18 +160,12 @@ public class MLP
     {
         inputs = new List<Vector<double>>();
         ds = new List<double>();
-        textAsset = Resources.Load("train4dAll") as TextAsset;
+        textAsset = Resources.Load("train6dAll") as TextAsset;
         string[] trainingDatas = textAsset.text.Split("\n");
         for (int i = 0; i < trainingDatas.Length - 2; i++)
         {
             string[] data = trainingDatas[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var tmp = new[] { double.Parse(data[0]), double.Parse(data[1]), double.Parse(data[2]), double.Parse(data[3]), double.Parse(data[4]) };
-            if (tmp[0] > tmax) tmax = tmp[0];
-            if (tmp[1] > tmax) tmax = tmp[1];
-            if (tmp[2] > tmax) tmax = tmp[2];
-            if (tmp[0] < tmin) tmin = tmp[0];
-            if (tmp[1] < tmin) tmin = tmp[1];
-            if (tmp[2] < tmin) tmin = tmp[2];
             inputs.Add(Vector<double>.Build.DenseOfArray(tmp));
             ds.Add(double.Parse(data[4]));
         }
