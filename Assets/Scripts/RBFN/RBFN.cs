@@ -1,27 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Accord.MachineLearning;
+using Accord.MachineLearning.Clustering;
+using Accord.Math.Distances;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.Statistics;
 using UnityEngine;
 public class RBFN
 {
     private List<Vector<double>> centers;
     private Vector<double> weights;
     private Vector<double> rbfs;
-    private List<Vector<double>> datas;
     private List<Vector<double>> inputs;
     private List<double> ys;
-    private Vector<double> sigmas;
-    private double bias = 20;
-    private double learningRate = 0.7;
-    private const int k = 15;
+    private Vector<double> cluster_stds;
+    private double bias = 5;
+    private double learningRate = 0.1;
+    private int k = 20;
     TextAsset textAsset;
+    int epoch = 10;
     public RBFN(int d)
     {
+        UnityEngine.Random.InitState(42);
         //Get Data
-        datas = new List<Vector<double>>();
+        k = d;
         inputs = new List<Vector<double>>();
         ys = new List<double>();
         textAsset = Resources.Load("train4dAll") as TextAsset;
@@ -30,40 +35,42 @@ public class RBFN
         {
             string[] data = trainingDatas[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var tmp = new[] { double.Parse(data[0]), double.Parse(data[1]), double.Parse(data[2]) };
-            var tmp2 = new[] { double.Parse(data[0]), double.Parse(data[1]), double.Parse(data[2]), double.Parse(data[3]) };
             ys.Add(double.Parse(data[3]));
             inputs.Add(Vector<double>.Build.DenseOfArray(tmp));
-            datas.Add(Vector<double>.Build.DenseOfArray(tmp2));
         }
         weights = Vector<double>.Build.Dense(k);
-        for (int i = 0; i < weights.Count; i++) weights[i] = UnityEngine.Random.Range(100.0f, 200.0f);
+        for (int i = 0; i < weights.Count; i++)
+        {
+            float stdDev = (float)(1.0 / Math.Sqrt(k));
+            weights[i] = UnityEngine.Random.Range(-stdDev, stdDev);
+        }
         rbfs = Vector<double>.Build.Dense(k);
         centers = new List<Vector<double>>();
-        Kmeans();//use K-means to initialize centers
-        sigmas = Vector<double>.Build.Dense(centers.Count);
-        for (int i = 0; i < centers.Count; i++)
-        {
-            sigmas[i] = 0.7;
-        }
+        cluster_stds = Vector<double>.Build.Dense(k);
+        Kmeans();//use K-means to initialize centers and std Deviation
     }
 
     public void Train()
     {
-        for (int n = 0; n < inputs.Count; n++)
+        for (int e = 0; e < epoch; e++)
         {
-            //calculate error:yn-Fn
-            double error = ys[n] - Output(inputs[n]);
-            //Debug.Log(ys[n] + " " + Output(inputs[n]));
-            //update bias and weight
-            for (int i = 0; i < weights.Count; i++)
+            for (int n = 0; n < inputs.Count; n++)
             {
-                double sigmaTmp = sigmas[i];
-                sigmas[i] += learningRate * error * weights[i] * rbfs[i] / sigmas[i] / sigmas[i] / sigmas[i] * Distance.Euclidean(inputs[n], centers[i]) * Distance.Euclidean(inputs[n], centers[i]);
-                double scale = learningRate * error * weights[i] * rbfs[i] / sigmaTmp / sigmaTmp;
-                centers[i] = centers[i] + (inputs[n] - centers[i]) * scale;
-                weights[i] += learningRate * rbfs[i] * error;
+                //calculate error:yn-Fn
+                double error = ys[n] - Output(inputs[n]);
+                if (n == 36)
+                    Debug.Log("n=" + n + "! " + ys[n] + " output: " + Output(inputs[n]));
+                //update bias and weight
+                for (int i = 0; i < weights.Count; i++)
+                {
+                    double stdTmp = cluster_stds[i];
+                    cluster_stds[i] += learningRate * error * weights[i] * rbfs[i] * Math.Pow(stdTmp, -3) * Math.Pow(Distance.Euclidean(inputs[n], centers[i]), 2);
+                    double scale = learningRate * error * weights[i] * rbfs[i] / Math.Pow(stdTmp, 2);
+                    centers[i] += (inputs[n] - centers[i]) * scale;
+                    weights[i] += learningRate * rbfs[i] * error;
+                }
+                bias += learningRate * error;
             }
-            bias += learningRate * error;
         }
     }
     private double Output(Vector<double> input)
@@ -72,13 +79,11 @@ public class RBFN
         for (int i = 0; i < rbfs.Count; i++)
         {
             double distance = Distance.Euclidean(input, centers[i]);
-            double rbf = Math.Exp(-distance * distance / (2 * sigmas[i] * sigmas[i]));
-            if (double.IsNaN(rbf)) rbf = 0.001;
+            double rbf = Math.Exp(-distance * distance / (2 * cluster_stds[i] * cluster_stds[i]));
             rbfs[i] = rbf;
         }
         //caculate F(n)
         double F = weights.ToRowMatrix().Multiply(rbfs)[0] + bias;
-        //Debug.Log(F);
         return F;
     }
     public double Predict(Vector<double> input)
@@ -89,15 +94,31 @@ public class RBFN
     {
         KMeans kmeans = new KMeans(k: k);
         double[][] accordData = inputs.Select(vector => vector.ToArray()).ToArray();//inputs
-        KMeansClusterCollection clusters = kmeans.Learn(accordData);
-        int[] clusterAssignments = clusters.Decide(accordData);
+        var clusters = kmeans.Learn(accordData);
         double[][] cs = clusters.Centroids;
         for (int i = 0; i < cs.Length; i++)
         {
             double[] center = cs[i];
-            //Debug.Log(center[0] + " " + center[1] + " " + center[2]);
             Vector<double> v = Vector<double>.Build.DenseOfArray(center);
             centers.Add(v);
+        }
+
+        // 獲取每個群組的標準差
+        List<double> distances = new List<double>();
+        for (int i = 0; i < k; i++)
+        {
+            distances.Clear();
+            int clusterIndex = i;
+            //第i群的所有點
+            double[][] clusterPoints = accordData.Where((point, index) => clusters.Decide(point) == clusterIndex).ToArray();
+            for (int j = 0; j < clusterPoints.Length; j++)
+            {
+                // 計算每個點到中心的距離
+                distances.Add(Distance.Euclidean(clusterPoints[j], cs[i]));
+            }
+            // 計算標準差
+            cluster_stds[i] = Statistics.StandardDeviation(distances);
+            distances.Clear();
         }
     }
 }

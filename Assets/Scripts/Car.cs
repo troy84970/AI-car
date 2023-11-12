@@ -21,9 +21,9 @@ public class Car : MonoBehaviour
     public Text dL, dM, dR;
     public PointsDrawer pointsDrawer;
     private MLP mlp;
-    private RBFN rBFN;
     //private RBFN rBFN;
     private float frontD, leftD, rightD;
+    float timer = 0;
     void Awake()
     {
 
@@ -39,19 +39,24 @@ public class Car : MonoBehaviour
         deltaz = 0;
         Reset();
         mlp = new MLP();
-        //rBFN = new RBFN(20);
+        //rBFN = new RBFN(36);
         //rBFN.Train();
     }
     // Update is called once per frame
     void Update()
     {
-        frontD = Vector3.Distance(CastRay(0), carTransform.position);
-        rightD = Vector3.Distance(CastRay(45), carTransform.position);
-        leftD = Vector3.Distance(CastRay(-45), carTransform.position);
-        UpdateDistanceText(leftD, frontD, rightD);
-        if (isCollideWall) Reset();
-        UpdateSteeringWheelDegree();
-        Move();
+        if (!isGoal)
+        {
+            frontD = Vector3.Distance(CastRay(0), carTransform.position);
+            rightD = Vector3.Distance(CastRay(45), carTransform.position);
+            leftD = Vector3.Distance(CastRay(-45), carTransform.position);
+            UpdateDistanceText(leftD, frontD, rightD);
+            if (isCollideWall) Reset();
+            UpdateSteeringWheelDegree();
+            Move();
+            timer += Time.deltaTime;
+        }
+
     }
     void UpdateSteeringWheelDegree()
     {
@@ -59,7 +64,7 @@ public class Car : MonoBehaviour
         v[2] = leftD;
         v[0] = frontD;
         v[1] = rightD;
-        steeringWheelDegree = (float)mlp.Predict(v);
+        steeringWheelDegree = -(float)mlp.Predict(v);
         //steeringWheelDegree = (float)rBFN.Predict(v);
     }
     void Move()
