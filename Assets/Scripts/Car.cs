@@ -38,7 +38,7 @@ public class Car : MonoBehaviour
         deltax = 0;
         deltaz = 0;
         Reset();
-        mlp = new MLP();
+        mlp = new MLP(5);
         //rBFN = new RBFN(36);
         //rBFN.Train();
     }
@@ -60,10 +60,12 @@ public class Car : MonoBehaviour
     }
     void UpdateSteeringWheelDegree()
     {
-        Vector<double> v = Vector<double>.Build.Dense(3);
+        Vector<double> v = Vector<double>.Build.Dense(5);
         v[2] = leftD;
         v[0] = frontD;
         v[1] = rightD;
+        v[3] = carTransform.position.x;
+        v[4] = carTransform.position.z;
         steeringWheelDegree = -(float)mlp.Predict(v);
         //steeringWheelDegree = (float)rBFN.Predict(v);
     }

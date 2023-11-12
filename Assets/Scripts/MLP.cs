@@ -10,10 +10,10 @@ public class MLP
     TextAsset textAsset;
     List<Vector<double>> inputs;
     List<double> ds;
-    int epoch = 40;//50
+    int epoch = 50;//50
     int inputCount = 3;
     int outputCount = 1;
-    int hiddenLayerNeuronCount = 14;//14
+    int hiddenLayerNeuronCount = 9;//14 epcoh 50
     int hiddenLayerCount = 1;
     Matrix<double> inputLayer;
     Matrix<double> outputLayer;
@@ -23,12 +23,13 @@ public class MLP
     List<Matrix<double>> biases; //colum matrix //h1 biases[0]對應hiddenLayer[0]
     double outPutBias;
     double learningRate = 0.4;
-    double tmax = 0, tmin = 1000, dmax = 40, dmin = -40;
+    double dmax = 40, dmin = -40;
     List<double> tmaxs;
     List<double> tmins;
 
-    public MLP()
+    public MLP(int inCount)
     {
+        inputCount = inCount;
         tmaxs = new List<double>();
         tmins = new List<double>();
         UnityEngine.Random.InitState(30);
@@ -51,7 +52,9 @@ public class MLP
         }
         Layeroutputs = new List<Matrix<double>>(new Matrix<double>[hiddenLayerCount + 1]);//outputlayer +1
         //Get Data
-        GetData();
+        if (inputCount == 3)
+            GetData();
+        else GetData5d();
         //random w and bias
         RandomizeBias();
         RandomizeWeights();
@@ -62,7 +65,6 @@ public class MLP
                 double y = FeedForward(inputs[n]);
                 BackPropogation(y, NormalizeY(ds[n]));
             }
-            //learningRate -= 0.01;
         }
     }
     public double FeedForward(Vector<double> input)
@@ -94,7 +96,7 @@ public class MLP
                 biases[i][j, 0] = UnityEngine.Random.Range(-1f, 1f);
             }
         }
-        outPutBias = -1;
+        outPutBias = -0.5;
     }
     private void RandomizeWeights()
     {
@@ -168,6 +170,14 @@ public class MLP
             var tmp = new[] { double.Parse(data[0]), double.Parse(data[1]), double.Parse(data[2]), double.Parse(data[3]), double.Parse(data[4]) };
             inputs.Add(Vector<double>.Build.DenseOfArray(tmp));
             ds.Add(double.Parse(data[4]));
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            var dimensionValues = inputs.Select(v => v[i]);
+            double max = dimensionValues.Max();
+            double min = dimensionValues.Min();
+            tmaxs.Add(max);
+            tmins.Add(min);
         }
     }
     private void BackPropogation(double y, double d)
