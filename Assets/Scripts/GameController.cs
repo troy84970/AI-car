@@ -1,11 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Scripting;
-using UnityEngine.UI;
 
-public class GameCotroller : MonoBehaviour
+public class GameController : MonoBehaviour
 {
     public static bool isStart;
     public static bool isTraining;

@@ -22,7 +22,7 @@ public class MLP
     List<Matrix<double>> v_List;//vj
     List<Matrix<double>> biases; //colum matrix //h1 biases[0]對應hiddenLayer[0]
     double outPutBias;
-    double learningRate = 0.6;//0.4
+    double learningRate = 0.6;
     double dmax = 40, dmin = -40;
     List<double> tmaxs;
     List<double> tmins;
@@ -32,11 +32,7 @@ public class MLP
         inputCount = inCount;
         tmaxs = new List<double>();
         tmins = new List<double>();
-#if UNITY_EDITOR
         UnityEngine.Random.InitState(30);
-#else
-    UnityEngine.Random.InitState(30);
-#endif
         //initialize
         biases = new List<Matrix<double>>();
         hiddenLayer = new List<Matrix<double>>();

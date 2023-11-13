@@ -25,6 +25,7 @@ public class Car : MonoBehaviour
     private float frontD, leftD, rightD;
     public Text trainingText;
     public Dropdown dataSelectDropdown;
+    private int dropdownOption;
     void Awake()
     {
 
@@ -44,7 +45,7 @@ public class Car : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (!isGoal && GameCotroller.isStart && !GameCotroller.isTraining)
+        if (!isGoal && GameController.isStart && !GameController.isTraining)
         {
             frontD = Vector3.Distance(CastRay(0), carTransform.position);
             rightD = Vector3.Distance(CastRay(45), carTransform.position);
@@ -58,21 +59,42 @@ public class Car : MonoBehaviour
     }
     public void Train()
     {
-        GameCotroller.isTraining = true;
+        GameController.isTraining = true;
         trainingText.text = "訓練中....";
-        mlp = new MLP(3);
-        GameCotroller.isTraining = false;
+        dropdownOption = dataSelectDropdown.value;
+        if (dropdownOption == 0)
+        {
+            dropdownOption = 0;
+            mlp = new MLP(3);
+        }
+        else if (dropdownOption == 1)
+        {
+            dropdownOption = 1;
+            mlp = new MLP(5);
+        }
+        GameController.isTraining = false;
         trainingText.text = "訓練完成!";
     }
     void UpdateSteeringWheelDegree()
     {
-        Vector<double> v = Vector<double>.Build.Dense(3);
-        v[0] = frontD;
-        v[1] = rightD;
-        v[2] = leftD;
-        //v[3] = carTransform.position.x;
-        //v[4] = carTransform.position.z;
-        steeringWheelDegree = (float)(-0.7 * (float)mlp.Predict(v));
+        if (dropdownOption == 0)
+        {
+            Vector<double> v = Vector<double>.Build.Dense(3);
+            v[0] = frontD;
+            v[1] = rightD;
+            v[2] = leftD;
+            steeringWheelDegree = (float)(-0.5 * (float)mlp.Predict(v));
+        }
+        else if (dropdownOption == 1)
+        {
+            Vector<double> v = Vector<double>.Build.Dense(5);
+            v[0] = frontD;
+            v[1] = rightD;
+            v[2] = leftD;
+            v[3] = carTransform.position.x;
+            v[4] = carTransform.position.z;
+            steeringWheelDegree = (float)(-0.5 * (float)mlp.Predict(v));
+        }
     }
     void Move()
     {
