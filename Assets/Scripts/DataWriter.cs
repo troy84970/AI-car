@@ -4,12 +4,6 @@ using UnityEngine;
 
 public class DataWriter : MonoBehaviour
 {
-    // void Start()
-    // {
-    //     Vector<double> v1 = Vector<double>.Build.DenseOfArray(new double[] { 1.0, 2.0, 3.0 });
-    //     Write4d(v1, 20);
-    //     Write4d(v1, 20);
-    // }
     public void Write4d(Vector<double> v, double d)
     {
         string data;

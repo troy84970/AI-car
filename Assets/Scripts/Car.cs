@@ -95,7 +95,7 @@ public class Car : MonoBehaviour
             v[4] = leftD;
             v[3] = rightD;
             steeringWheelDegree = (float)(-0.5 * (float)mlp.Predict(v));
-            dataWriter.Write4d(v, -steeringWheelDegree);
+            dataWriter.Write6d(v, -steeringWheelDegree);
         }
     }
     void Move()
