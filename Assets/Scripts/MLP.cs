@@ -10,17 +10,17 @@ public class MLP
     TextAsset textAsset;
     List<Vector<double>> inputs;
     List<double> ds;
-    int epoch = 150;//50 //100 count 6 lcount 3
+    int epoch = 150;
     int inputCount = 3;
     int outputCount = 1;
-    int hiddenLayerNeuronCount = 6;//14 epcoh 50
+    int hiddenLayerNeuronCount = 6;
     int hiddenLayerCount = 3;
     Matrix<double> inputLayer;
     Matrix<double> outputLayer;
     List<Matrix<double>> hiddenLayer;
-    List<Matrix<double>> Layeroutputs;//每層的輸出 [0]h1 output
+    List<Matrix<double>> Layeroutputs;//每層的輸出
     List<Matrix<double>> v_List;//vj
-    List<Matrix<double>> biases; //colum matrix //h1 biases[0]對應hiddenLayer[0]
+    List<Matrix<double>> biases; //biases[0]對應hiddenLayer[0]
     double outPutBias;
     double learningRate = 0.6;
     double dmax = 40, dmin = -40;
@@ -30,6 +30,12 @@ public class MLP
     public MLP(int inCount)
     {
         inputCount = inCount;
+        if (inCount == 5)
+        {
+            epoch = 200;
+            hiddenLayerCount = 3;
+            hiddenLayerNeuronCount = 7;
+        }
         tmaxs = new List<double>();
         tmins = new List<double>();
         UnityEngine.Random.InitState(30);
@@ -107,7 +113,7 @@ public class MLP
             {
                 for (int k = 0; k < hiddenLayer[i].ColumnCount; k++)
                 {
-                    hiddenLayer[i][j, k] = UnityEngine.Random.Range(-0.6f, 0.8f); //0.5 1.5
+                    hiddenLayer[i][j, k] = UnityEngine.Random.Range(-0.6f, 0.8f);
                 }
             }
         }
@@ -171,7 +177,7 @@ public class MLP
             string[] data = trainingDatas[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var tmp = new[] { double.Parse(data[0]), double.Parse(data[1]), double.Parse(data[2]), double.Parse(data[3]), double.Parse(data[4]) };
             inputs.Add(Vector<double>.Build.DenseOfArray(tmp));
-            ds.Add(double.Parse(data[4]));
+            ds.Add(double.Parse(data[5]));
         }
         for (int i = 0; i < 5; i++)
         {

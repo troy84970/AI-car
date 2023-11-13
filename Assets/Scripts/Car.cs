@@ -88,11 +88,11 @@ public class Car : MonoBehaviour
         else if (dropdownOption == 1)
         {
             Vector<double> v = Vector<double>.Build.Dense(5);
-            v[0] = frontD;
-            v[1] = rightD;
-            v[2] = leftD;
-            v[3] = carTransform.position.x;
-            v[4] = carTransform.position.z;
+            v[0] = carTransform.position.x;
+            v[1] = carTransform.position.z;
+            v[2] = frontD;
+            v[4] = leftD;
+            v[3] = rightD;
             steeringWheelDegree = (float)(-0.5 * (float)mlp.Predict(v));
         }
     }
