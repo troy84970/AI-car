@@ -21,11 +21,11 @@ public class Car : MonoBehaviour
     public Text dL, dM, dR;
     public PointsDrawer pointsDrawer;
     private MLP mlp;
-    //private RBFN rBFN;
     private float frontD, leftD, rightD;
     public Text trainingText;
     public Dropdown dataSelectDropdown;
     private int dropdownOption;
+    public DataWriter dataWriter;
     void Awake()
     {
 
@@ -84,6 +84,7 @@ public class Car : MonoBehaviour
             v[1] = rightD;
             v[2] = leftD;
             steeringWheelDegree = (float)(-0.5 * (float)mlp.Predict(v));
+            dataWriter.Write4d(v, -steeringWheelDegree);
         }
         else if (dropdownOption == 1)
         {
@@ -94,6 +95,7 @@ public class Car : MonoBehaviour
             v[4] = leftD;
             v[3] = rightD;
             steeringWheelDegree = (float)(-0.5 * (float)mlp.Predict(v));
+            dataWriter.Write4d(v, -steeringWheelDegree);
         }
     }
     void Move()
