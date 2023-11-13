@@ -54,7 +54,7 @@ public class WallBuilder : MonoBehaviour
         float distance = Vector3.Distance(midPoint, bottomRight) * 2;
         GameObject goal;
         goal = Instantiate(goalPrefab, midPoint, Quaternion.Euler(0, 0, 0));
-        goal.transform.localScale = new Vector3(distance, 2, 0.02f);
+        goal.transform.localScale = new Vector3(distance, 2, 1f);
         goal.transform.parent = transform;
     }
 }

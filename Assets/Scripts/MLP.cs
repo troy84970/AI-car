@@ -10,11 +10,11 @@ public class MLP
     TextAsset textAsset;
     List<Vector<double>> inputs;
     List<double> ds;
-    int epoch = 50;//50
+    int epoch = 150;//50 //100 count 6 lcount 3
     int inputCount = 3;
     int outputCount = 1;
-    int hiddenLayerNeuronCount = 9;//14 epcoh 50
-    int hiddenLayerCount = 1;
+    int hiddenLayerNeuronCount = 6;//14 epcoh 50
+    int hiddenLayerCount = 3;
     Matrix<double> inputLayer;
     Matrix<double> outputLayer;
     List<Matrix<double>> hiddenLayer;
@@ -22,7 +22,7 @@ public class MLP
     List<Matrix<double>> v_List;//vj
     List<Matrix<double>> biases; //colum matrix //h1 biases[0]對應hiddenLayer[0]
     double outPutBias;
-    double learningRate = 0.4;
+    double learningRate = 0.6;//0.4
     double dmax = 40, dmin = -40;
     List<double> tmaxs;
     List<double> tmins;
@@ -32,7 +32,11 @@ public class MLP
         inputCount = inCount;
         tmaxs = new List<double>();
         tmins = new List<double>();
+#if UNITY_EDITOR
         UnityEngine.Random.InitState(30);
+#else
+    UnityEngine.Random.InitState(30);
+#endif
         //initialize
         biases = new List<Matrix<double>>();
         hiddenLayer = new List<Matrix<double>>();
@@ -65,6 +69,7 @@ public class MLP
                 double y = FeedForward(inputs[n]);
                 BackPropogation(y, NormalizeY(ds[n]));
             }
+            learningRate *= 0.98;
         }
     }
     public double FeedForward(Vector<double> input)
@@ -93,10 +98,10 @@ public class MLP
         {
             for (int j = 0; j < biases[i].RowCount; j++)
             {
-                biases[i][j, 0] = UnityEngine.Random.Range(-1f, 1f);
+                biases[i][j, 0] = UnityEngine.Random.Range(-2f, 2f);//-1,1
             }
         }
-        outPutBias = -0.5;
+        outPutBias = -0.8;//-0.5
     }
     private void RandomizeWeights()
     {
@@ -106,18 +111,19 @@ public class MLP
             {
                 for (int k = 0; k < hiddenLayer[i].ColumnCount; k++)
                 {
-                    hiddenLayer[i][j, k] = UnityEngine.Random.Range(0.5f, 1.5f);
+                    hiddenLayer[i][j, k] = UnityEngine.Random.Range(-0.6f, 0.8f); //0.5 1.5
                 }
             }
         }
         outputLayer = Matrix<double>.Build.Dense(outputCount, hiddenLayerNeuronCount);
         for (int i = 0; i < outputLayer.ColumnCount; i++)
-            outputLayer[0, i] = UnityEngine.Random.Range(0.5f, 1.5f);
+            outputLayer[0, i] = UnityEngine.Random.Range(-0.6f, 0.8f);
     }
     public double Predict(Vector<double> input)
     {
         double r = FeedForward(input);
         r = (dmax - dmin) * r + dmin;
+        if (Math.Abs(r) < 0.8) r = 0;
         return r;
     }
     private double NormalizeData(double d, int i)
@@ -127,7 +133,7 @@ public class MLP
     private Vector<double> NormalizeData(Vector<double> v)
     {
         Vector<double> v2 = v.Clone();
-        for (int i = 0; i < v.Count; i++)
+        for (int i = 0; i < v2.Count; i++)
             v2[i] = NormalizeData(v2[i], i);
         return v2;
     }

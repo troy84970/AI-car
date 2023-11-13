@@ -23,7 +23,8 @@ public class Car : MonoBehaviour
     private MLP mlp;
     //private RBFN rBFN;
     private float frontD, leftD, rightD;
-    float timer = 0;
+    public Text trainingText;
+    public Dropdown dataSelectDropdown;
     void Awake()
     {
 
@@ -38,14 +39,12 @@ public class Car : MonoBehaviour
         deltax = 0;
         deltaz = 0;
         Reset();
-        mlp = new MLP(5);
-        //rBFN = new RBFN(36);
-        //rBFN.Train();
+        //mlp = new MLP(3);
     }
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        if (!isGoal)
+        if (!isGoal && GameCotroller.isStart && !GameCotroller.isTraining)
         {
             frontD = Vector3.Distance(CastRay(0), carTransform.position);
             rightD = Vector3.Distance(CastRay(45), carTransform.position);
@@ -54,20 +53,26 @@ public class Car : MonoBehaviour
             if (isCollideWall) Reset();
             UpdateSteeringWheelDegree();
             Move();
-            timer += Time.deltaTime;
         }
 
     }
+    public void Train()
+    {
+        GameCotroller.isTraining = true;
+        trainingText.text = "訓練中....";
+        mlp = new MLP(3);
+        GameCotroller.isTraining = false;
+        trainingText.text = "訓練完成!";
+    }
     void UpdateSteeringWheelDegree()
     {
-        Vector<double> v = Vector<double>.Build.Dense(5);
-        v[2] = leftD;
+        Vector<double> v = Vector<double>.Build.Dense(3);
         v[0] = frontD;
         v[1] = rightD;
-        v[3] = carTransform.position.x;
-        v[4] = carTransform.position.z;
-        steeringWheelDegree = -(float)mlp.Predict(v);
-        //steeringWheelDegree = (float)rBFN.Predict(v);
+        v[2] = leftD;
+        //v[3] = carTransform.position.x;
+        //v[4] = carTransform.position.z;
+        steeringWheelDegree = (float)(-0.7 * (float)mlp.Predict(v));
     }
     void Move()
     {
@@ -77,8 +82,8 @@ public class Car : MonoBehaviour
         deltaz = (Math.Sin(ydegree * Math.PI / 180 + steeringWheelDegree * Math.PI / 180) - Math.Sin(steeringWheelDegree * Math.PI / 180) * Math.Cos(ydegree * Math.PI / 180)) * Time.deltaTime * speed;
         float deltaydegree = (float)Math.Asin(2 * Math.Sin(steeringWheelDegree * Math.PI / 180) / 6);
         //move
-        carTransform.Translate((float)deltax, 0, (float)deltaz);
-        carTransform.Rotate(0, -deltaydegree, 0, Space.Self);
+        carTransform.Translate((float)deltax, 0, (float)deltaz, Space.World);
+        carTransform.Rotate(0, -deltaydegree, 0, Space.World);
         pointsDrawer.AddPoint(new Vector3(carTransform.position.x, 0.1f, carTransform.position.z));
     }
 
